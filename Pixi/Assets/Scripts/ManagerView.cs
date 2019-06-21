@@ -95,7 +95,11 @@ public class ManagerView : MonoBehaviour
         foreach (Transform t in m_balls_holder.transform)
         {
             if (t.name == name)
+            {
                 Destroy(t.gameObject);
+                GenerateRandomBubble(true);
+            }
+                
         }
     }
 
@@ -107,7 +111,7 @@ public class ManagerView : MonoBehaviour
             if (InList(colliders_in_range[i]))
             {
                 KillObject(colliders_in_range[i]);
-                GenerateRandomBubble(true);
+                
             }
             
                 
