@@ -55,11 +55,11 @@ public class BallView : MonoBehaviour
         if (size == 0)
             return 1f;
         else if (size == 1)
-            return 1.25f;
+            return 1.2f;
         else if (size == 2)
-            return 1.55f;
+            return 1.45f;
         else if (size == 3)
-            return 1.85f;
+            return 1.65f;
         else
             return 5f;
 

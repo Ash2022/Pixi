@@ -177,11 +177,11 @@ public class ManagerView : MonoBehaviour
             {
                 GeneratePowerUp(1, pos);
             }
-            else if(new_range>=0.3f && new_range<0.4f)
+            else if(new_range>=0.3f && new_range<0.9f)
             {
                 GeneratePowerUp(2, pos);
             }
-            else if(new_range>=0.4)
+            else if(new_range>=0.9)
             {
                 GeneratePowerUp(3, pos);
             }
