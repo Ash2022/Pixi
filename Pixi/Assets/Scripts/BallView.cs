@@ -17,16 +17,56 @@ public class BallView : MonoBehaviour
     {
         m_bubble_type = bubble_type;
         m_image.color = GetColor(bubble_type);
-        float size = GetSize(bubble_type);
-        m_rect.localScale = new Vector3(size, size, size);
+        float width = GetSize(bubble_type);
+        
+        m_rect.sizeDelta = new Vector2(width, width);
+
+        gameObject.GetComponent<CircleCollider2D>().radius = width / 2;
+
         m_rect.localPosition = pos;
         m_bubble_pop_action = bubble_pop_action;
         
     }
 
+
+    public List<BallView> BallsInMyRangeAndMatchingColor()
+    {
+        List<BallView> m_in_range = new List<BallView>();
+
+        foreach (Transform T in ManagerView.Instance.Balls_holder.transform)
+        {
+            if(T.gameObject.GetComponent<BallView>()!=null && T.gameObject.GetComponent<BallView>().m_bubble_type == m_bubble_type)
+            {
+                RectTransform other_rect = T.GetComponent<RectTransform>();
+
+                //compare distancces and see if its in range based on both objects radius
+                double xpower = (m_rect.localPosition.x - other_rect.localPosition.x) * (m_rect.localPosition.x - other_rect.localPosition.x);
+                double ypower = (m_rect.localPosition.y - other_rect.localPosition.y) * (m_rect.localPosition.y - other_rect.localPosition.y);
+
+                double distance = Math.Sqrt(xpower + ypower);
+
+                float other_raidus = other_rect.rect.width / 2;
+                float curr_radius = m_rect.rect.width / 2;
+
+                //reduced 0.1 to not lose float calculation touching
+                if (distance < other_raidus + curr_radius - 0.1f)
+                    m_in_range.Add(T.gameObject.GetComponent<BallView>());
+            }
+            
+        }
+
+        return m_in_range;
+    }
+
+
     public List<string> GetTouching()
     {
         return m_my_touching;
+    }
+
+    public List<BallView> GetTouching2()
+    {
+        return BallsInMyRangeAndMatchingColor();
     }
 
     public void Button_Clicked()
@@ -53,29 +93,17 @@ public class BallView : MonoBehaviour
     private float GetSize(int size)
     {
         if (size == 0)
-            return 1f;
+            return 100f;
         else if (size == 1)
-            return 1.2f;
+            return 120f;
         else if (size == 2)
-            return 1.45f;
+            return 145f;
         else if (size == 3)
-            return 1.65f;
+            return 165f;
         else
             return 5f;
 
     }
 
-    void OnCollisionEnter2D(Collision2D other)
-    {
-        if(other.gameObject.GetComponent<BallView>()!=null && other.gameObject.GetComponent<BallView>().m_bubble_type == m_bubble_type)
-            m_my_touching.Add(other.gameObject.name);
-    }
-
-    void OnCollisionExit2D(Collision2D other)
-    {
-        if (other.gameObject.GetComponent<BallView>() != null && other.gameObject.GetComponent<BallView>().m_bubble_type == m_bubble_type)
-            m_my_touching.Remove(other.gameObject.name);
-    }
-    
 
 }

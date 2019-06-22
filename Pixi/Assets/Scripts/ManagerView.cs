@@ -4,9 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+
+
+
 public class ManagerView : MonoBehaviour
 {
+    
     public static ManagerView Instance;
+    
 
     [SerializeField] GameObject m_ball_prefab;
     [SerializeField] GameObject m_powerup_prefab;
@@ -15,7 +21,10 @@ public class ManagerView : MonoBehaviour
     [SerializeField] Text m_score_text;
     [SerializeField] Image m_bar_fill;
     [SerializeField] GameObject m_start_button;
+    [SerializeField] GameObject m_start_auto_button;
     [SerializeField] GameObject m_game_over;
+    [SerializeField] GameObject m_avarage_score;
+    [SerializeField] Text m_avarage_score_label;
 
     int m_last_popped_bubble_type = -1;
     int m_bubbles_in_combo = 0;
@@ -32,17 +41,81 @@ public class ManagerView : MonoBehaviour
 
     const float TOTAL_FULL_TIME = 20f;
 
-
-    //
     int m_score = 0;
 
+    public GameObject Balls_holder { get => m_balls_holder; set => m_balls_holder = value; }
+    public bool Game_active { get => m_game_active; set => m_game_active = value; }
+    public int Score { get => m_score; set => m_score = value; }
 
     private void Awake()
     {
         Instance = this;
+        
     }
 
+    public void AutoStartStarts()
+    {
+        StartGame();
+        StartCoroutine(GameTimer());
+    }
 
+    public void Button_StartClicked()
+    {
+        Time.timeScale = 1;
+        StartGame();
+        StartCoroutine(GameTimer());
+    }
+
+    public void StartGame()
+    {
+        ResetAll();
+
+        StartCoroutine(GenerateBalls(7, 0.1f));
+        m_start_button.SetActive(false);
+        m_start_auto_button.SetActive(false);
+        m_game_over.SetActive(false);
+    }
+
+    private void ResetAll()
+    {
+        m_avarage_score.SetActive(false);
+        bubble_index = 0;
+        m_last_popped_bubble_type = -1;
+        m_bubbles_in_combo = 0;
+
+        foreach (Transform t in m_balls_holder.transform)
+        {
+            Destroy(t.gameObject);
+        }
+
+        m_game_active = true;
+        m_health = 1000;
+        UpdateScore(0, true);
+    }
+
+    private void UpdateScore(int added_to_score, bool reset = false)
+    {
+        if (reset)
+            m_score = 0;
+        else
+            m_score += added_to_score;
+
+        Debug.Log("Score Added: " + added_to_score);
+
+        m_score_text.text = "SCORE: " + m_score;
+
+    }
+
+    IEnumerator GenerateBalls(int amount, float delay, bool from_top = false)
+    {
+        int counter = 0;
+        while (counter < amount)
+        {
+            GenerateRandomBubble(from_top);
+            counter++;
+            yield return new WaitForSeconds(delay);
+        }
+    }
 
     private void GenerateRandomBubble(bool from_top)
     {
@@ -58,14 +131,14 @@ public class ManagerView : MonoBehaviour
         bubble_index++;
 
         int bubble_type = UnityEngine.Random.Range(0, 4);
-
+        
         new_bubble.GetComponent<BallView>().SetData2(bubble_type, pos, BubblePopped);
     }
 
     private void GeneratePowerUp(int power_up_type, Vector2 pos)
     {
         GameObject new_power_up = Instantiate(m_powerup_prefab, m_balls_holder.GetComponent<Transform>());
-        
+
         if(power_up_type==1)
         {
             new_power_up.GetComponent<PowerView>().SetData1(1, pos, Bomb);
@@ -120,7 +193,7 @@ public class ManagerView : MonoBehaviour
 
     private void HealthUp(List<string> colliders_in_range)
     {
-        m_health += 200;
+        m_health += 20;
     }
 
     private void KillAll(List<string> colliders_in_range)
@@ -128,20 +201,42 @@ public class ManagerView : MonoBehaviour
         m_special_power_up = true;
     }
 
+    private void AddMyTouchingRecursive(BallView ballView,List<string> touching)
+    {
+        if(ballView.GetTouching2().Count == 0)
+        {
+            return;
+        }
+        else
+        {
+            List<BallView> ballViews = ballView.GetTouching2();
 
+            for (int i = 0; i < ballViews.Count; i++)
+            {
+                if(touching.Contains(ballViews[i].gameObject.name) ==false) 
+                {
+                    touching.Add(ballViews[i].gameObject.name);
+                    AddMyTouchingRecursive(ballViews[i], touching);
+                    
+                }
+                    
+            }
+            
+        }
+        
+    }
     
     public void BubblePopped(int bubble_type, Vector2 pos, BallView ballView)
     {
         if(m_special_power_up)
         {
-            List<string> touching = ballView.GetTouching();
+            List<string> vs = new List<string>();
 
-            //m_special_power_up = false;
-            for (int i = 0; i < touching.Count; i++)
+            AddMyTouchingRecursive(ballView, vs);
+
+            for (int i = 0; i < vs.Count; i++)
             {
-                if (InList(touching[i]))
-                    KillObject(touching[i]);
-                    
+                KillObject(vs[i]);
             }
 
             m_special_power_up = false;
@@ -155,6 +250,8 @@ public class ManagerView : MonoBehaviour
 
             if (bubble_type == m_last_popped_bubble_type)
                 m_bubbles_in_combo++;
+            else
+                m_bubbles_in_combo = 0;
 
             m_last_popped_bubble_type = bubble_type;
 
@@ -171,7 +268,7 @@ public class ManagerView : MonoBehaviour
 
     private void HandlePowerUps(Vector2 pos)
     {
-        if(UnityEngine.Random.Range(0,1f)>0.2f)
+        if(UnityEngine.Random.Range(0,1f)>0.8f)
         {
             float new_range = UnityEngine.Random.Range(0, 1f);
 
@@ -192,60 +289,15 @@ public class ManagerView : MonoBehaviour
         }
     }
 
-    public void Button_StartClicked()
+    public void ShowHideAvarageScore(bool show,string text)
     {
+        m_avarage_score.SetActive(show);
 
-        StartGame();
-        StartCoroutine(GameTimer());
-    }
-
-    public void StartGame()
-    {
-        ResetAll();
-
-        StartCoroutine(GenerateBalls(7, 0.1f));
-        m_start_button.SetActive(false);
-        m_game_over.SetActive(false);
-    }
-
-    private void ResetAll()
-    {
-        m_last_popped_bubble_type = -1;
-        m_bubbles_in_combo = 0;
-
-        foreach (Transform t in m_balls_holder.transform)
-        {
-            Destroy(t.gameObject);
-        }
-
-        m_game_active = true;
-        m_health = 1000;
-        UpdateScore(0, true);
-    }
-
-    private void UpdateScore(int added_to_score, bool reset = false)
-    {
-        if (reset)
-            m_score = 0;
-        else
-            m_score += added_to_score;
-
-        Debug.Log("Score Added: " + added_to_score);
-
-        m_score_text.text = "SCORE: " + m_score;
+        m_avarage_score_label.text = text;
 
     }
-
-    IEnumerator GenerateBalls(int amount, float delay, bool from_top = false)
-    {
-        int counter = 0;
-        while (counter < amount)
-        {
-            GenerateRandomBubble(from_top);
-            counter++;
-            yield return new WaitForSeconds(delay);
-        }
-    }
+    
+    
 
     IEnumerator GameTimer()
     {
@@ -276,6 +328,7 @@ public class ManagerView : MonoBehaviour
 
         m_game_active = false;
         m_start_button.SetActive(true);
+        m_start_auto_button.SetActive(true);
         m_game_over.SetActive(true);
     }
 

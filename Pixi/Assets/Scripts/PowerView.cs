@@ -31,26 +31,38 @@ public class PowerView : MonoBehaviour
 
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    public List<string> InMyRange()
     {
-        m_my_touching.Add(other.gameObject.name);
-    }
+        List<string> m_in_range = new List<string>();
 
-    void OnTriggerExit2D(Collider2D other)
-    {
-        m_my_touching.Remove(other.gameObject.name);
-    }
+        foreach (Transform T in ManagerView.Instance.Balls_holder.transform)
+        {
+            RectTransform other_rect = T.GetComponent<RectTransform>();
+            if (T.gameObject.GetComponent<BallView>() != null)
+            {
+                //compare distancces and see if its in range based on both objects radius
+                double xpower = (m_rect.localPosition.x - other_rect.localPosition.x) * (m_rect.localPosition.x - other_rect.localPosition.x);
+                double ypower = (m_rect.localPosition.y - other_rect.localPosition.y) * (m_rect.localPosition.y - other_rect.localPosition.y);
 
+                double distance = Math.Sqrt(xpower + ypower);
 
-    void OnTriggerStay2D(Collider2D other)
-    {
-        if (!m_my_touching.Contains(other.gameObject.name))
-            m_my_touching.Add(other.gameObject.name);
+                float other_raidus = other_rect.rect.width / 2;
+                //double distance for the powerup
+                float curr_radius = m_rect.rect.width;
+
+                if (distance < other_raidus + curr_radius)
+                    m_in_range.Add(T.gameObject.name);
+            }
+            
+        }
+
+        return m_in_range;
     }
+    
 
     public void Button_Clicked()
     {
-        m_power_action(m_my_touching);
+        m_power_action(InMyRange());
         DestroyImmediate(gameObject);
     }
 
