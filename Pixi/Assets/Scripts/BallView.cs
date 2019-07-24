@@ -10,10 +10,16 @@ public class BallView : MonoBehaviour
     [SerializeField] RectTransform  m_rect;
     int m_bubble_type;
     Action<int,Vector2, BallView> m_bubble_pop_action;
+    
+    public delegate bool bubble_action(int bubble_type, Vector2 position, BallView ballView);
+
+    bubble_action m_bubble_pop_action2;
+
+    bool m_no_touch = false;
 
     List<string> m_my_touching = new List<string>();
 
-    public void SetData2(int bubble_type,Vector3 pos, Action<int,Vector2, BallView> bubble_pop_action)
+    public void SetData2(int bubble_type,Vector3 pos, bubble_action bubble_pop_action)
     {
         m_bubble_type = bubble_type;
         m_image.color = GetColor(bubble_type);
@@ -24,7 +30,7 @@ public class BallView : MonoBehaviour
         gameObject.GetComponent<CircleCollider2D>().radius = width / 2;
 
         m_rect.localPosition = pos;
-        m_bubble_pop_action = bubble_pop_action;
+        m_bubble_pop_action2 = bubble_pop_action;
         
     }
 
@@ -69,10 +75,17 @@ public class BallView : MonoBehaviour
         return BallsInMyRangeAndMatchingColor();
     }
 
+    void OnMouseOver()
+    {
+        if(Input.GetMouseButton(0) || Input.touchCount>0)
+            Button_Clicked();
+    }
+       
+
     public void Button_Clicked()
     {
-        m_bubble_pop_action(m_bubble_type,m_rect.localPosition,this);
-        DestroyImmediate(gameObject);
+        if(m_bubble_pop_action2(m_bubble_type,m_rect.localPosition,this))
+            DestroyImmediate(gameObject);
     }
 
     private Color GetColor(int col)

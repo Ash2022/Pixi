@@ -36,6 +36,7 @@ public class ManagerView : MonoBehaviour
 
     bool m_game_active = false;
     bool m_special_power_up = false;
+    bool m_mouse_went_up = false;
 
     const float INITIAL_DECREASE_RATE = 50;
 
@@ -100,7 +101,7 @@ public class ManagerView : MonoBehaviour
         else
             m_score += added_to_score;
 
-        Debug.Log("Score Added: " + added_to_score);
+        //Debug.Log("Score Added: " + added_to_score);
 
         m_score_text.text = "SCORE: " + m_score;
 
@@ -226,7 +227,8 @@ public class ManagerView : MonoBehaviour
         
     }
     
-    public void BubblePopped(int bubble_type, Vector2 pos, BallView ballView)
+
+    public bool BubblePopped(int bubble_type, Vector2 pos, BallView ballView)
     {
         if(m_special_power_up)
         {
@@ -244,26 +246,55 @@ public class ManagerView : MonoBehaviour
         }
         else
         {
-            GenerateRandomBubble(true);
-
-            HandlePowerUps(pos);
-
             if (bubble_type == m_last_popped_bubble_type)
+            {
                 m_bubbles_in_combo++;
+                
+            }
             else
                 m_bubbles_in_combo = 0;
 
-            m_last_popped_bubble_type = bubble_type;
+            
 
-            int add_to_score = 10;
+            if (m_bubbles_in_combo == 0 && m_mouse_went_up==false)
+            {
+                //need to put something totally new in the last poped bubble so it wont go in the condition next frame as a combo
+                m_last_popped_bubble_type = -1;
+                //will not kill the bubble
+                return false;
+            }
+                
+            else
+            {
+                m_last_popped_bubble_type = bubble_type;
+                m_mouse_went_up = false;
+                GenerateRandomBubble(true);
 
-            if (m_bubbles_in_combo >= 3)
-                add_to_score += (m_bubbles_in_combo) * 2;
+                HandlePowerUps(pos);
 
-            UpdateScore(add_to_score);
+                int add_to_score = 10;
+
+                if (m_bubbles_in_combo >= 3)
+                    add_to_score += (m_bubbles_in_combo) * 2;
+
+                UpdateScore(add_to_score);
+                return true;
+            }
+
+            
         }
+        return false;
 
-        
+    }
+
+    private void Update()
+    {
+        //need to see when mouse was up (or no touch) - then we will return true anyways for bubble popped
+         if (/*Input.touchCount == 0 || */Input.GetMouseButton(0)==false)
+             m_mouse_went_up = true;
+         
+
+        //Debug.Log(Input.GetMouseButton(0));
     }
 
     private void HandlePowerUps(Vector2 pos)
@@ -272,7 +303,7 @@ public class ManagerView : MonoBehaviour
         {
             float new_range = UnityEngine.Random.Range(0, 1f);
 
-            Debug.Log("new_range " + new_range);
+            //Debug.Log("new_range " + new_range);
 
             if(new_range<0.3f)
             {
