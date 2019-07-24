@@ -289,12 +289,15 @@ public class ManagerView : MonoBehaviour
 
     private void Update()
     {
-        //need to see when mouse was up (or no touch) - then we will return true anyways for bubble popped
-         if (/*Input.touchCount == 0 || */Input.GetMouseButton(0)==false)
-             m_mouse_went_up = true;
-         
+#if UNITY_EDITOR
+        if (Input.GetMouseButton(0) == false)
+            m_mouse_went_up = true;
 
-        //Debug.Log(Input.GetMouseButton(0));
+#elif UNITY_ANDROID
+        if (Input.touchCount == 0)
+            m_mouse_went_up = true;
+#endif
+        
     }
 
     private void HandlePowerUps(Vector2 pos)

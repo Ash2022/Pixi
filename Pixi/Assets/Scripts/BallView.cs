@@ -77,8 +77,16 @@ public class BallView : MonoBehaviour
 
     void OnMouseOver()
     {
-        if(Input.GetMouseButton(0) || Input.touchCount>0)
+#if UNITY_EDITOR
+        if (Input.GetMouseButton(0))
             Button_Clicked();
+
+#elif UNITY_ANDROID
+        if (Input.touchCount > 0)
+           Button_Clicked();
+#endif
+   
+            
     }
        
 
