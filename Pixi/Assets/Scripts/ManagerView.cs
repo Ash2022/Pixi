@@ -34,6 +34,8 @@ public class ManagerView : MonoBehaviour
     [SerializeField] GameObject m_balls_holder;
     [SerializeField] GameObject m_powerup_holder;
     [SerializeField] Text m_score_text;
+    [SerializeField] Text m_score_info_text;
+    [SerializeField] Text m_turns_text;
     [SerializeField] Image m_bar_fill;
     [SerializeField] GameObject m_start_button;
     [SerializeField] GameObject m_start_auto_button;
@@ -50,6 +52,8 @@ public class ManagerView : MonoBehaviour
     public GameUtils Utils { get => m_utils; set => m_utils = value; }
     public Image Bar_fill { get => m_bar_fill; set => m_bar_fill = value; }
     public Text Score_text { get => m_score_text; set => m_score_text = value; }
+    public Text Turns_text { get => m_turns_text; set => m_turns_text = value; }
+    public Text Score_info_text { get => m_score_info_text; set => m_score_info_text = value; }
 
     private void Awake()
     {
@@ -97,23 +101,23 @@ public class ManagerView : MonoBehaviour
 
     }
 
-    public IEnumerator GenerateBalls(int amount,Vector2 bubble_size, float delay, bool from_top = false)
+    public IEnumerator GenerateBalls(int amount,Vector2 bubble_size,int num_colors, float delay, bool from_top = false)
     {
         int counter = 0;
         while (counter < amount)
         {
-            GenerateRandomBubble(from_top, bubble_size);
+            GenerateRandomBubble(from_top, bubble_size,num_colors);
             counter++;
             yield return new WaitForSeconds(delay);
         }
     }
 
-    public void GenerateRandomBubble(bool from_top, Vector2 bubble_size)
+    public void GenerateRandomBubble(bool from_top, Vector2 bubble_size, int num_colors)
     {
         Vector2 pos = new Vector2(UnityEngine.Random.Range(-100, 100), 0);
         
         if (from_top)
-            pos = new Vector2(UnityEngine.Random.Range(-100, 100), 200f);
+            pos = new Vector2(UnityEngine.Random.Range(-100, 100), 400f);
 
         GameObject new_bubble = Instantiate(m_ball_prefab, m_balls_holder.GetComponent<Transform>());
 
@@ -123,7 +127,7 @@ public class ManagerView : MonoBehaviour
 
         bubble_index++;
 
-        int bubble_type = UnityEngine.Random.Range(0, 4);
+        int bubble_type = UnityEngine.Random.Range(0, num_colors);
         int size = UnityEngine.Random.Range((int)bubble_size.x, (int)bubble_size.y);
 
         new_bubble.GetComponent<BallView>().SetData2((BubbleColors)bubble_type, size, pos, GameController.Instance.BubblePopped);
@@ -158,17 +162,21 @@ public class ManagerView : MonoBehaviour
         return false;
     }
     
-    public void KillObject(string name)
+    //return the number of killed
+    public int KillObject(string name)
     {
+        int counter = 0;
         foreach (Transform t in m_balls_holder.transform)
         {
             if (t.name == name)
             {
+                counter++;
                 DestroyImmediate(t.gameObject);
-                GenerateRandomBubble(true, GameController.Instance.GetCurrLevel().GetSizeRange());
+                GenerateRandomBubble(true, GameController.Instance.GetCurrLevelRange(),GameController.Instance.GetCurrNumColors());
             }
   
         }
+        return counter;
     }
 
 
@@ -202,7 +210,7 @@ public class ManagerView : MonoBehaviour
     }
     
 
-    public void TimerExpired()
+    public void GameOver()
     {
         m_start_button.SetActive(true);
         m_start_auto_button.SetActive(true);

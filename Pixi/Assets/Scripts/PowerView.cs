@@ -64,6 +64,8 @@ public class PowerView : MonoBehaviour
 
     public void Button_Clicked()
     {
+        GameController.Instance.Bubbles_can_click = false;
+
         if (m_bubble_type == 1)
             m_pop_action_with_param(InMyRange());
         else
