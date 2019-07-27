@@ -37,7 +37,12 @@ public class GameController : MonoBehaviour
         ResetLevel();
         ManagerView.Instance.StartGame();
         StartCoroutine(GameTimer());
-        StartCoroutine(ManagerView.Instance.GenerateBalls(7, 0.1f));
+        StartCoroutine(ManagerView.Instance.GenerateBalls(15,new Vector2(70f,120f), 0.01f));
+    }
+
+    public ModelManager.Level GetCurrLevel()
+    {
+        return ModelManager.Instance.Levels[m_curr_level];
     }
 
     public void Button_NextLevelClicked()
@@ -135,7 +140,7 @@ public class GameController : MonoBehaviour
             {
                 m_last_popped_bubble_type = bubbleColors;
                 m_mouse_went_up = false;
-                ManagerView.Instance.GenerateRandomBubble(true);
+                ManagerView.Instance.GenerateRandomBubble(true,GetCurrLevel().GetSizeRange());
 
                 HandlePowerUps(pos);
 

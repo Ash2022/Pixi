@@ -97,23 +97,23 @@ public class ManagerView : MonoBehaviour
 
     }
 
-    public IEnumerator GenerateBalls(int amount, float delay, bool from_top = false)
+    public IEnumerator GenerateBalls(int amount,Vector2 bubble_size, float delay, bool from_top = false)
     {
         int counter = 0;
         while (counter < amount)
         {
-            GenerateRandomBubble(from_top);
+            GenerateRandomBubble(from_top, bubble_size);
             counter++;
             yield return new WaitForSeconds(delay);
         }
     }
 
-    public void GenerateRandomBubble(bool from_top)
+    public void GenerateRandomBubble(bool from_top, Vector2 bubble_size)
     {
         Vector2 pos = new Vector2(UnityEngine.Random.Range(-100, 100), 0);
-
+        
         if (from_top)
-            pos = new Vector2(UnityEngine.Random.Range(-100, 100), 500f);
+            pos = new Vector2(UnityEngine.Random.Range(-100, 100), 200f);
 
         GameObject new_bubble = Instantiate(m_ball_prefab, m_balls_holder.GetComponent<Transform>());
 
@@ -124,9 +124,9 @@ public class ManagerView : MonoBehaviour
         bubble_index++;
 
         int bubble_type = UnityEngine.Random.Range(0, 4);
-        int bubble_size = UnityEngine.Random.Range(40, 200);
+        int size = UnityEngine.Random.Range((int)bubble_size.x, (int)bubble_size.y);
 
-        new_bubble.GetComponent<BallView>().SetData2((BubbleColors)bubble_type,bubble_size, pos, GameController.Instance.BubblePopped);
+        new_bubble.GetComponent<BallView>().SetData2((BubbleColors)bubble_type, size, pos, GameController.Instance.BubblePopped);
     }
 
     public void GeneratePowerUp(int power_up_type, Vector2 pos)
@@ -165,9 +165,9 @@ public class ManagerView : MonoBehaviour
             if (t.name == name)
             {
                 DestroyImmediate(t.gameObject);
-                GenerateRandomBubble(true);
+                GenerateRandomBubble(true, GameController.Instance.GetCurrLevel().GetSizeRange());
             }
-                
+  
         }
     }
 

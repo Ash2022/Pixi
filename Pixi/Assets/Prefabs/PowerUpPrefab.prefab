@@ -92,6 +92,7 @@ GameObject:
   - component: {fileID: 6012302099218105588}
   - component: {fileID: 5171187998627960081}
   - component: {fileID: 8001649462562655031}
+  - component: {fileID: 4284821873375735418}
   m_Layer: 5
   m_Name: PowerUpPrefab
   m_TagString: Untagged
@@ -223,3 +224,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_rect: {fileID: 6012302099218105481}
   m_text: {fileID: 817011774065986557}
+--- !u!58 &4284821873375735418
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6012302099218105480}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 49.11

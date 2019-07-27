@@ -7,6 +7,8 @@ public class ModelManager : MonoBehaviour
     public static ModelManager Instance;
     List<Level> levels = new List<Level>();
 
+    public List<Level> Levels { get => levels; set => levels = value; }
+
     private void Awake()
     {
         Instance = this;
@@ -35,6 +37,11 @@ public class ModelManager : MonoBehaviour
             this.m_min_size = m_min_size;
             this.m_max_size = m_max_size;
             this.m_pass_score = m_pass_score;
+        }
+
+        public Vector2 GetSizeRange()
+        {
+            return new Vector2(m_min_size, m_max_size);
         }
     }
 
