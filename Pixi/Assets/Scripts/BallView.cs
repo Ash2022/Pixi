@@ -8,10 +8,11 @@ public class BallView : MonoBehaviour
 {
     [SerializeField] Image          m_image;
     [SerializeField] RectTransform  m_rect;
-    int m_bubble_type;
+    ManagerView.BubbleColors m_bubble_color;
+    int m_bubble_size;
     Action<int,Vector2, BallView> m_bubble_pop_action;
     
-    public delegate bool bubble_action(int bubble_type, Vector2 position, BallView ballView);
+    public delegate bool bubble_action(ManagerView.BubbleColors bubble_color, Vector2 position, BallView ballView);
 
     bubble_action m_bubble_pop_action2;
 
@@ -19,11 +20,11 @@ public class BallView : MonoBehaviour
 
     List<string> m_my_touching = new List<string>();
 
-    public void SetData2(int bubble_type,Vector3 pos, bubble_action bubble_pop_action)
+    public void SetData2(ManagerView.BubbleColors bubble_color,int bubble_size, Vector3 pos, bubble_action bubble_pop_action)
     {
-        m_bubble_type = bubble_type;
-        m_image.color = GetColor(bubble_type);
-        float width = GetSize(bubble_type);
+        m_bubble_color = bubble_color;
+        m_image.color = ManagerView.Instance.Utils.GetColorFromEnum(m_bubble_color);
+        float width = bubble_size;
         
         m_rect.sizeDelta = new Vector2(width, width);
 
@@ -41,7 +42,7 @@ public class BallView : MonoBehaviour
 
         foreach (Transform T in ManagerView.Instance.Balls_holder.transform)
         {
-            if(T.gameObject.GetComponent<BallView>()!=null && T.gameObject.GetComponent<BallView>().m_bubble_type == m_bubble_type)
+            if(T.gameObject.GetComponent<BallView>()!=null && T.gameObject.GetComponent<BallView>().m_bubble_color == m_bubble_color)
             {
                 RectTransform other_rect = T.GetComponent<RectTransform>();
 
@@ -92,39 +93,9 @@ public class BallView : MonoBehaviour
 
     public void Button_Clicked()
     {
-        if(m_bubble_pop_action2(m_bubble_type,m_rect.localPosition,this))
+        if(m_bubble_pop_action2(m_bubble_color, m_rect.localPosition,this))
             DestroyImmediate(gameObject);
     }
-
-    private Color GetColor(int col)
-    {
-        if (col == 0)
-            return Color.blue;
-        else if (col == 1)
-            return Color.green;
-        else if (col == 2)
-            return Color.yellow;
-        else if (col == 3)
-            return Color.red;
-        else
-            return Color.white;
-
-    }
-
-    private float GetSize(int size)
-    {
-        if (size == 0)
-            return 100f;
-        else if (size == 1)
-            return 120f;
-        else if (size == 2)
-            return 145f;
-        else if (size == 3)
-            return 165f;
-        else
-            return 5f;
-
-    }
-
+    
 
 }

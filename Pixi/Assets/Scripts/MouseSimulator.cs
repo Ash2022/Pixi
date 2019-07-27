@@ -27,7 +27,7 @@ public class MouseSimulator : MonoBehaviour
 
         while(total_game<30)
         {
-            while (ManagerView.Instance.Game_active)
+            while (GameController.Instance.Game_active)
             {
 
                 int total = ManagerView.Instance.Balls_holder.transform.childCount;
@@ -48,7 +48,7 @@ public class MouseSimulator : MonoBehaviour
             }
 
             total_game++;
-            total_score += ManagerView.Instance.Score;
+            total_score += GameController.Instance.Score;
             ManagerView.Instance.AutoStartStarts();
 
             ManagerView.Instance.ShowHideAvarageScore(true, "Playing Game: " + total_game.ToString());
