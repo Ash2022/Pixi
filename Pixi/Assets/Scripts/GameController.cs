@@ -12,7 +12,7 @@ public class GameController : MonoBehaviour
 
     ManagerView.BubbleColors m_last_popped_bubble_type = ManagerView.BubbleColors.Black;
     int m_bubbles_in_combo = 0;
-    int m_num_turns_left=0;
+    int m_num_turns_left = 0;
 
     /*
     float m_health = 1000;
@@ -20,8 +20,7 @@ public class GameController : MonoBehaviour
     */
     bool m_game_active = false;
     bool m_special_power_up_engaged = false;
-    bool m_mouse_went_up = false;
-    bool m_prev_frame_mouse_down = false;
+
     bool m_bubbles_can_click = true;
 
     const float INITIAL_DECREASE_RATE = 50;
@@ -31,6 +30,10 @@ public class GameController : MonoBehaviour
     public bool Game_active { get => m_game_active; set => m_game_active = value; }
     public int Score { get => m_score; set => m_score = value; }
     public bool Bubbles_can_click { get => m_bubbles_can_click; set => m_bubbles_can_click = value; }
+    public bool During_drag { get => during_drag; set => during_drag = value; }
+    bool m_bubble_popped_in_click = false;
+
+    private bool during_drag = false;
 
     private void Awake()
     {
@@ -39,24 +42,27 @@ public class GameController : MonoBehaviour
 
     private void UpdateTurnsDisplay()
     {
-        ManagerView.Instance.Turns_text.text = "TURNS: "+ m_num_turns_left;
+        ManagerView.Instance.Turns_text.text = "TURNS: " + m_num_turns_left;
     }
 
     public void TurnEnded()
     {
-        m_mouse_went_up = true;
-        m_prev_frame_mouse_down = false;
-        
+        Debug.Log("Mouse UP");
+
+        if (m_bubble_popped_in_click)
+            ScoreAndResetCombo();
+
+        During_drag = false;
         m_num_turns_left--;
         UpdateTurnsDisplay();
 
 
-        if (m_num_turns_left==0)
+        if (m_num_turns_left == 0)
         {
             m_game_active = false;
             ManagerView.Instance.GameOver();
         }
-            
+
 
 
     }
@@ -66,16 +72,16 @@ public class GameController : MonoBehaviour
         //score last combo if any
         int add_to_score = 0;
 
-        
-            for (int i = 1; i <= m_bubbles_in_combo+1; i++)
-            {
-                add_to_score += i * BASIC_BUBBLE_SCORE;
-            }
 
-            UpdateScore(add_to_score, " " + (m_bubbles_in_combo+1) + " in combo");
-            
-        
+        for (int i = 1; i <= m_bubbles_in_combo + 1; i++)
+        {
+            add_to_score += i * BASIC_BUBBLE_SCORE;
+        }
 
+        UpdateScore(add_to_score, " " + (m_bubbles_in_combo + 1) + " in combo");
+
+
+        During_drag = false;
         m_bubbles_in_combo = 0;
     }
 
@@ -93,7 +99,7 @@ public class GameController : MonoBehaviour
         ResetLevel();
         ManagerView.Instance.StartGame();
         //StartCoroutine(GameTimer());
-        StartCoroutine(ManagerView.Instance.GenerateBalls(35,GetCurrLevelRange(), GetCurrNumColors(), 0.01f));
+        StartCoroutine(ManagerView.Instance.GenerateBalls(35, GetCurrLevelRange(), GetCurrNumColors(), 0.01f));
     }
 
     private ModelManager.Level GetCurrLevel()
@@ -122,7 +128,7 @@ public class GameController : MonoBehaviour
         m_bubbles_in_combo = 0;
         m_game_active = true;
         m_num_turns_left = ModelManager.Instance.Levels[m_curr_level].Num_turns;
-        UpdateScore(0,"Reset", true);
+        UpdateScore(0, "Reset", true);
         UpdateTurnsDisplay();
     }
 
@@ -132,13 +138,13 @@ public class GameController : MonoBehaviour
 
         if (Input.GetMouseButton(0) == false)
         {
-            if (m_prev_frame_mouse_down)
+            if (During_drag)
                 TurnEnded();
-            else
-                m_prev_frame_mouse_down = false;
+
+            During_drag = false;
+
         }
-        else
-            m_prev_frame_mouse_down = true;
+
 
 
 #elif UNITY_ANDROID
@@ -204,41 +210,43 @@ public class GameController : MonoBehaviour
             m_special_power_up_engaged = false;
             return false;
         }
-        
 
+        m_bubble_popped_in_click = false;
 
-            if (bubbleColors == m_last_popped_bubble_type)
-                m_bubbles_in_combo++;
+        if (bubbleColors == m_last_popped_bubble_type)
+            m_bubbles_in_combo++;
+        else
+        {
+            if(m_bubbles_in_combo<=0)
+            {
+                m_bubble_popped_in_click = true;
+            }
             else
             {
-                //reset combo
+                //color swap in combo
+                
                 ScoreAndResetCombo();
-
-            }
-
-
-            if (m_bubbles_in_combo == 0 && m_mouse_went_up == false)
-            {
-                //need to put something totally new in the last poped bubble so it wont go in the condition next frame as a combo
                 m_last_popped_bubble_type = ManagerView.BubbleColors.Black;
-                //will not kill the bubble
                 return false;
             }
-            else
-            {
 
-                m_last_popped_bubble_type = bubbleColors;
-                m_mouse_went_up = false;
-                ManagerView.Instance.GenerateRandomBubble(true, GameController.Instance.GetCurrLevelRange(), GameController.Instance.GetCurrNumColors());
+        }
+       
+        
+            m_last_popped_bubble_type = bubbleColors;
 
-                CreatePowerUps(pos);
+            ManagerView.Instance.GenerateRandomBubble(true, GameController.Instance.GetCurrLevelRange(), GameController.Instance.GetCurrNumColors());
 
+            CreatePowerUps(pos);
 
+      
+
+        //ScoreAndResetCombo();   
+
+        Debug.Log(m_bubbles_in_combo);
 
                 return true;
-            }
-        
-        
+
     }
 
     public void HealthUp()
@@ -306,7 +314,7 @@ public class GameController : MonoBehaviour
     */
 
 
-    private void UpdateScore(int added_to_score,string info, bool reset = false)
+    private void UpdateScore(int added_to_score, string info, bool reset = false)
     {
         if (reset)
             m_score = 0;

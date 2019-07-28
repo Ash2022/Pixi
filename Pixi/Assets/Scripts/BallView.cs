@@ -78,6 +78,13 @@ public class BallView : MonoBehaviour
 
     void OnMouseOver()
     {
+        if (Input.GetMouseButton(0) && GameController.Instance.During_drag)
+        {
+            Debug.Log("BALLVIEW _ MOUSE OVER");
+            Button_Clicked();
+        }
+            
+        /*
 #if UNITY_EDITOR
         if (Input.GetMouseButton(0) && GameController.Instance.Bubbles_can_click)
             Button_Clicked();
@@ -85,10 +92,21 @@ public class BallView : MonoBehaviour
 #elif UNITY_ANDROID
         if (Input.touchCount > 0 && GameController.Instance.Bubbles_can_click)
            Button_Clicked();
-#endif
+#endif*/
 
 
     }
+
+    void OnMouseDown()
+    {
+        if (Input.GetMouseButton(0) && GameController.Instance.During_drag == false)
+        {
+            Debug.Log("BALLVIEW _ BUTTON DOWN");
+            GameController.Instance.During_drag = true;
+            Button_Clicked();
+        }
+    }
+      
 
 
     public void Button_Clicked()
